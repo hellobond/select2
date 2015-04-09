@@ -686,6 +686,9 @@ the specific language governing permissions and limitations under the Apache Lic
         init: function (opts) {
             var results, search, resultsSelector = ".select2-results";
 
+            //Custom check to override mouseup when dropdown is initially created
+            this.preventSelection = false;
+
             // prepare options
             this.opts = opts = this.prepareOpts(opts);
 
@@ -802,7 +805,7 @@ the specific language governing permissions and limitations under the Apache Lic
             search.on("blur", function () { search.removeClass("select2-focused");});
 
             this.dropdown.on("mouseup", resultsSelector, this.bind(function (e) {
-                if ($(e.target).closest(".select2-result-selectable").length > 0) {
+                if ($(e.target).closest(".select2-result-selectable").length > 0 && ! this.preventSelection) {
                     this.highlightUnderEvent(e);
                     this.selectHighlighted(e);
                 }
@@ -1377,6 +1380,8 @@ the specific language governing permissions and limitations under the Apache Lic
 
             if (!this.shouldOpen()) return false;
 
+            this.preventSelection = true;
+
             this.opening();
 
             // Only bind the document mousemove when the dropdown is visible
@@ -1384,6 +1389,11 @@ the specific language governing permissions and limitations under the Apache Lic
                 lastMousePosition.x = e.pageX;
                 lastMousePosition.y = e.pageY;
             });
+
+            setTimeout(function()
+            {
+                this.preventSelection = false;
+            }.bind(this), 200);
 
             return true;
         },
@@ -3064,7 +3074,7 @@ the specific language governing permissions and limitations under the Apache Lic
             });
             this.setVal(val);
         },
-        
+
         createChoice: function (data) {
             var enableChoice = !data.locked,
                 enabledItem = $(
